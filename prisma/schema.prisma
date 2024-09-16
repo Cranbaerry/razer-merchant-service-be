@@ -1,0 +1,57 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["relationJoins"]
+}
+
+// generator zod {
+//   provider                         = "zod-prisma-types"
+//   output                           = "../libs/entities/zod/generated"
+//   addSelectType                    = "false"
+//   addIncludeType                   = "true"
+//   createOptionalDefaultValuesTypes = "false"
+//   createInputTypes                 = "false"
+//   createModelTypes                 = "true"
+//   addInputTypeValidation           = "false"
+//   createRelationValuesTypes        = "false"
+//   validateWhereUniqueInput         = "false"
+//   useDefaultValidators             = "true"
+//   coerceDate                       = "false"
+//   createPartialTypes               = "false"
+//   writeBarrelFiles                 = "false"
+//   useMultipleFiles                 = "false"
+// }
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id         Int           @id @default(autoincrement())
+  email      String        @db.VarChar(255)
+  password   String        @db.VarChar(50)
+  is_admin   Boolean       @default(false)
+  created_at DateTime      @default(now())
+  updated_at DateTime?     @updatedAt
+  Sessions   UserSession[]
+
+  @@index([email])
+  @@map("users")
+}
+
+model UserSession {
+  id         Int       @id @default(autoincrement())
+  token      String    @unique @db.VarChar(600)
+  user_id    Int
+  created_at DateTime  @default(now())
+  updated_at DateTime? @updatedAt
+  User       User      @relation(fields: [user_id], references: [id])
+
+  @@index([token])
+  @@map("user_sessions")
+}
